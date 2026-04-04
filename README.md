@@ -1,15 +1,15 @@
-# Expense Tracker API & Dashboard
+Expense Tracker API & Dashboard
 
 A modern, simple-to-use Expense Tracker built with Node.js, Express, and SQLite.
 
-### Features
+ ->Features
 - **Add Expenses**: Easily track your spending with category and amount.
 - **View History**: See your recent transactions in a clean, glassy UI.
 - **Spending Stats**: Automatic total spending calculation and category-wise breakdown.
 - **SQLite Storage**: Persistent data without complex setup.
 - **Mobile Responsive**: Works across various screen sizes.
 
-### API Endpoints
+->API Endpoints
 - `GET /api/expenses`: Retrieve all expenses.
 - `POST /api/expenses`: Create a new expense (body: `{ amount, category }`).
 - `DELETE /api/expenses/:id`: Remove an expense by ID.
