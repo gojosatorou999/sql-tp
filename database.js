@@ -10,8 +10,19 @@ db.exec(`
     description TEXT,
     date TEXT DEFAULT (DATE('now')),
     timestamp DATETIME DEFAULT CURRENT_TIMESTAMP
-  )
+  );
+
+  CREATE TABLE IF NOT EXISTS settings (
+    key TEXT PRIMARY KEY,
+    value TEXT
+  );
 `);
+
+// Set default budget if not exists
+const defaultBudget = db.prepare('SELECT value FROM settings WHERE key = ?').get('monthly_budget');
+if (!defaultBudget) {
+  db.prepare('INSERT INTO settings (key, value) VALUES (?, ?)').run('monthly_budget', '5000');
+}
 
 // Migrations: Ensure new columns exist for existing databases
 try {

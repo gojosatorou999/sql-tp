@@ -24,12 +24,16 @@
             </div>
             <div class="stats-container">
                 <div class="stat-item">
-                    <div class="stat-label">Total Balance</div>
-                    <div class="stat-value" id="total-amount">₹0.00</div>
+                    <div class="stat-label">Today</div>
+                    <div class="stat-value" id="today-amount">₹0.00</div>
                 </div>
                 <div class="stat-item">
-                    <div class="stat-label">Transactions</div>
-                    <div class="stat-value" id="expense-count">0</div>
+                    <div class="stat-label">This Month</div>
+                    <div class="stat-value" id="monthly-amount">₹0.00</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-label">Total Balance</div>
+                    <div class="stat-value" id="total-amount">₹0.00</div>
                 </div>
             </div>
         </header>
@@ -73,6 +77,23 @@
                 </form>
             </section>
 
+            <section class="glass budget-card">
+                <div class="budget-header">
+                    <h3>Monthly Budget</h3>
+                    <button class="action-btn" id="open-budget-modal" title="Set Budget">
+                        <i data-lucide="settings"></i>
+                    </button>
+                </div>
+                <div class="budget-stat">
+                    <span id="budget-progress-text">0% used</span>
+                    <span id="budget-remaining-text">₹0.00 left</span>
+                </div>
+                <div class="progress-bar">
+                    <div class="progress-fill" id="budget-fill"></div>
+                </div>
+                <p class="budget-limit">Limit: <span id="monthly-budget-value">₹0.00</span></p>
+            </section>
+
             <section class="glass chart-card">
                 <h3>Spending Breakdown</h3>
                 <div class="chart-wrapper">
@@ -102,6 +123,10 @@
             <section class="glass history-card">
                 <div class="history-header">
                     <h3>Recent History</h3>
+                    <button class="btn btn-secondary" id="export-btn">
+                        <i data-lucide="download"></i>
+                        <span>Export CSV</span>
+                    </button>
                 </div>
                 <div class="expenses-container" id="expenses-list">
                     <!-- Expenses will be populated here -->
@@ -147,6 +172,27 @@
                 </div>
                 <button type="submit" class="btn btn-primary" style="width: 100%;">
                     <span>Update Transaction</span>
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Budget Modal -->
+    <div class="modal-overlay" id="budget-modal">
+        <div class="glass modal">
+            <div class="modal-header">
+                <h3>Set Monthly Budget</h3>
+                <button class="action-btn" id="close-budget-modal">
+                    <i data-lucide="x"></i>
+                </button>
+            </div>
+            <form id="budget-form">
+                <div class="input-group" style="margin-bottom: 1.5rem;">
+                    <label for="budget-amount">Monthly Limit (₹)</label>
+                    <input type="number" id="budget-amount" required>
+                </div>
+                <button type="submit" class="btn btn-primary" style="width: 100%;">
+                    <span>Save Budget</span>
                 </button>
             </form>
         </div>

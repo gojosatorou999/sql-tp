@@ -76,16 +76,38 @@ app.put('/api/expenses/:id', (req, res) => {
   res.json(expense);
 });
 
+// 5. Budget Settings
+app.get('/api/budget', (req, res) => {
+  const budget = db.prepare('SELECT value FROM settings WHERE key = ?').get('monthly_budget');
+  res.json({ budget: parseFloat(budget.value) });
+});
+
+app.post('/api/budget', (req, res) => {
+  const { amount } = req.body;
+  db.prepare('UPDATE settings SET value = ? WHERE key = ?').run(amount.toString(), 'monthly_budget');
+  res.json({ message: 'Budget updated successfully' });
+});
+
 // 4. Stats: Total Spending & Category Breakdown
 app.get('/api/expenses/stats', (req, res) => {
   // Total spending
   const total = db.prepare('SELECT SUM(amount) as total FROM expenses').get();
+  
+  // This month's spending
+  const currentMonth = new Date().toISOString().substring(0, 7); // YYYY-MM
+  const monthlyTotal = db.prepare("SELECT SUM(amount) as total FROM expenses WHERE date LIKE ?").get(`${currentMonth}%`);
+
+  // Today's spending
+  const today = new Date().toISOString().split('T')[0];
+  const todayTotal = db.prepare("SELECT SUM(amount) as total FROM expenses WHERE date = ?").get(today);
   
   // Category-wise breakdown
   const breakdown = db.prepare('SELECT category, SUM(amount) as total FROM expenses GROUP BY category').all();
   
   res.json({
     totalSpending: total.total || 0,
+    monthlyTotal: monthlyTotal.total || 0,
+    todayTotal: todayTotal.total || 0,
     breakdown: breakdown
   });
 });

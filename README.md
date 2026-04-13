@@ -5,10 +5,12 @@ A modern, full-stack expense tracking application with a premium UI and real-tim
 ## ✨ New Features
 - **Visual Analytics**: Interactive doughnut chart showing category-wise spending breakdown using Chart.js.
 - **Advanced Filtering**: Search through transactions by description or category.
+- **Monthly Budgeting**: Set a monthly limit and track your spending with a visual progress bar and color-coded alerts.
+- **Data Export**: Download your transaction history as a CSV file for backup or external analysis.
+- **Period Summaries**: Quick view of Today's, This Month's, and Total spending in the header.
 - **Full CRUD**: Edit existing transactions and update their details.
 - **Detailed Tracking**: Support for custom dates and descriptions for every expense.
 - **Premium UI**: Glassmorphism design with a bento-style dashboard, dark mode, and smooth animations.
-- **Responsive**: Fully optimized for mobile and desktop views.
 
 ## 🚀 Quick Start
 

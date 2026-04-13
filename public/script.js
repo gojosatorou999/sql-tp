@@ -1,18 +1,33 @@
 let categoryChart = null;
+let monthlyBudget = 0;
 
 // DOM Elements
 const form = document.getElementById('expense-form');
 const totalAmountEl = document.getElementById('total-amount');
+const todayAmountEl = document.getElementById('today-amount');
+const monthlyAmountEl = document.getElementById('monthly-amount');
 const expensesListEl = document.getElementById('expenses-list');
-const expenseCountEl = document.getElementById('expense-count');
 const searchInput = document.getElementById('search-input');
 const categoryFilter = document.getElementById('category-filter');
 const dateInput = document.getElementById('date');
+
+// Budget Elements
+const budgetProgressText = document.getElementById('budget-progress-text');
+const budgetRemainingText = document.getElementById('budget-remaining-text');
+const budgetFill = document.getElementById('budget-fill');
+const monthlyBudgetValue = document.getElementById('monthly-budget-value');
+const openBudgetModalBtn = document.getElementById('open-budget-modal');
+const budgetModal = document.getElementById('budget-modal');
+const budgetForm = document.getElementById('budget-form');
+const closeBudgetModalBtn = document.getElementById('close-budget-modal');
 
 // Modal Elements
 const editModal = document.getElementById('edit-modal');
 const editForm = document.getElementById('edit-form');
 const closeModalBtn = document.getElementById('close-modal');
+
+// Export button
+const exportBtn = document.getElementById('export-btn');
 
 // Initialize
 document.addEventListener('DOMContentLoaded', () => {
@@ -20,8 +35,20 @@ document.addEventListener('DOMContentLoaded', () => {
     const today = new Date().toISOString().split('T')[0];
     dateInput.value = today;
     
+    fetchBudget();
     updateDashboard();
 });
+
+async function fetchBudget() {
+    try {
+        const res = await fetch('/api/budget');
+        const data = await res.json();
+        monthlyBudget = data.budget;
+        monthlyBudgetValue.textContent = `₹${monthlyBudget.toLocaleString()}`;
+    } catch (error) {
+        console.error('Error fetching budget:', error);
+    }
+}
 
 // Event Listeners for Filtering
 searchInput.addEventListener('input', debounce(() => updateDashboard(), 300));
@@ -55,6 +82,7 @@ async function updateDashboard() {
         const stats = await statsRes.json();
         
         renderStats(stats);
+        updateBudgetProgress(stats.monthlyTotal);
         renderChart(stats.breakdown);
         renderExpenses(expenses);
     } catch (error) {
@@ -64,10 +92,30 @@ async function updateDashboard() {
 
 // Render summary
 function renderStats(stats) {
-    totalAmountEl.textContent = `₹${parseFloat(stats.totalSpending).toLocaleString(undefined, { 
-        minimumFractionDigits: 2, 
-        maximumFractionDigits: 2 
-    })}`;
+    const format = (val) => `₹${parseFloat(val).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+    
+    totalAmountEl.textContent = format(stats.totalSpending);
+    todayAmountEl.textContent = format(stats.todayTotal);
+    monthlyAmountEl.textContent = format(stats.monthlyTotal);
+}
+
+function updateBudgetProgress(monthlyTotal) {
+    if (monthlyBudget <= 0) return;
+
+    const percent = Math.min((monthlyTotal / monthlyBudget) * 100, 100);
+    const remaining = Math.max(monthlyBudget - monthlyTotal, 0);
+
+    budgetFill.style.width = `${percent}%`;
+    budgetProgressText.textContent = `${Math.round((monthlyTotal / monthlyBudget) * 100)}% used`;
+    budgetRemainingText.textContent = `₹${remaining.toLocaleString()} left`;
+
+    // Color feedback
+    budgetFill.classList.remove('warning', 'danger');
+    if (percent >= 100) {
+        budgetFill.classList.add('danger');
+    } else if (percent >= 80) {
+        budgetFill.classList.add('warning');
+    }
 }
 
 // Render Chart.js
@@ -84,10 +132,7 @@ function renderChart(breakdown) {
         categoryChart.destroy();
     }
 
-    if (data.length === 0) {
-        // Handle empty state for chart if needed
-        return;
-    }
+    if (data.length === 0) return;
 
     categoryChart = new Chart(ctx, {
         type: 'doughnut',
@@ -119,7 +164,7 @@ function renderChart(breakdown) {
                     }
                 }
             },
-            cutout: '70%',
+            cutout: '75%',
             responsive: true,
             maintainAspectRatio: false
         }
@@ -129,7 +174,6 @@ function renderChart(breakdown) {
 // Render the expense list
 function renderExpenses(expenses) {
     expensesListEl.innerHTML = '';
-    expenseCountEl.textContent = expenses.length;
     
     if (expenses.length === 0) {
         expensesListEl.innerHTML = `
@@ -153,15 +197,9 @@ function renderExpenses(expenses) {
             year: 'numeric'
         });
 
-        // Simple emoji map based on category
         const emojiMap = {
-            'Food': '🍔',
-            'Travel': '🚗',
-            'Health': '💊',
-            'Shopping': '🛍️',
-            'Bills': '🧾',
-            'Entertainment': '🎬',
-            'Other': '✨'
+            'Food': '🍔', 'Travel': '🚗', 'Health': '💊', 'Shopping': '🛍️', 
+            'Bills': '🧾', 'Entertainment': '🎬', 'Other': '✨'
         };
 
         div.innerHTML = `
@@ -187,10 +225,9 @@ function renderExpenses(expenses) {
     lucide.createIcons();
 }
 
-// Form submission to add expense
+// Form submissions
 form.addEventListener('submit', async (e) => {
     e.preventDefault();
-    
     const amount = document.getElementById('amount').value;
     const category = document.getElementById('category').value;
     const date = document.getElementById('date').value;
@@ -204,65 +241,105 @@ form.addEventListener('submit', async (e) => {
     
     if (res.ok) {
         form.reset();
-        // Reset date to today after submit
         document.getElementById('date').value = new Date().toISOString().split('T')[0];
         updateDashboard();
     }
 });
 
-// Delete expense
-async function deleteExpense(id) {
-    if (!confirm('Are you sure you want to delete this transaction?')) return;
-
-    const res = await fetch(`/api/expenses/${id}`, {
-        method: 'DELETE'
+// Budget form
+budgetForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const amount = document.getElementById('budget-amount').value;
+    
+    const res = await fetch('/api/budget', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ amount })
     });
     
     if (res.ok) {
-        updateDashboard();
+        budgetModal.style.display = 'none';
+        fetchBudget().then(() => updateDashboard());
     }
+});
+
+// Delete expense
+async function deleteExpense(id) {
+    if (!confirm('Are you sure?')) return;
+    const res = await fetch(`/api/expenses/${id}`, { method: 'DELETE' });
+    if (res.ok) updateDashboard();
 }
 
-// Edit Modal Logic
+// Modal Handlers
 function openEditModal(expense) {
     document.getElementById('edit-id').value = expense.id;
     document.getElementById('edit-amount').value = expense.amount;
     document.getElementById('edit-category').value = expense.category;
-    document.getElementById('edit-date').value = expense.date || expense.timestamp.split(' ')[0];
+    document.getElementById('edit-date').value = expense.date;
     document.getElementById('edit-description').value = expense.description || '';
-    
     editModal.style.display = 'flex';
     lucide.createIcons();
 }
 
-closeModalBtn.addEventListener('click', () => {
-    editModal.style.display = 'none';
-});
+closeModalBtn.onclick = () => editModal.style.display = 'none';
+openBudgetModalBtn.onclick = () => {
+    document.getElementById('budget-amount').value = monthlyBudget;
+    budgetModal.style.display = 'flex';
+    lucide.createIcons();
+};
+closeBudgetModalBtn.onclick = () => budgetModal.style.display = 'none';
 
-// Close modal when clicking outside
-window.addEventListener('click', (e) => {
-    if (e.target === editModal) {
-        editModal.style.display = 'none';
-    }
-});
+window.onclick = (e) => {
+    if (e.target === editModal) editModal.style.display = 'none';
+    if (e.target === budgetModal) budgetModal.style.display = 'none';
+};
 
 editForm.addEventListener('submit', async (e) => {
     e.preventDefault();
-    
     const id = document.getElementById('edit-id').value;
-    const amount = document.getElementById('edit-amount').value;
-    const category = document.getElementById('edit-category').value;
-    const date = document.getElementById('edit-date').value;
-    const description = document.getElementById('edit-description').value;
-    
+    const body = {
+        amount: document.getElementById('edit-amount').value,
+        category: document.getElementById('edit-category').value,
+        date: document.getElementById('edit-date').value,
+        description: document.getElementById('edit-description').value
+    };
     const res = await fetch(`/api/expenses/${id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ amount, category, date, description })
+        body: JSON.stringify(body)
     });
-    
     if (res.ok) {
         editModal.style.display = 'none';
         updateDashboard();
+    }
+});
+
+// CSV Export
+exportBtn.addEventListener('click', async () => {
+    try {
+        const search = searchInput.value;
+        const category = categoryFilter.value;
+        const url = `/api/expenses?search=${encodeURIComponent(search)}&category=${encodeURIComponent(category)}`;
+        
+        const res = await fetch(url);
+        const data = await res.json();
+        
+        if (data.length === 0) {
+            alert('No data to export');
+            return;
+        }
+
+        const headers = ['ID', 'Date', 'Category', 'Amount', 'Description'];
+        const rows = data.map(e => [e.id, e.date, e.category, e.amount, `"${e.description || ''}"`]);
+        
+        const csvContent = [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
+        const blob = new Blob([csvContent], { type: 'text/csv' });
+        const downloadUrl = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.setAttribute('href', downloadUrl);
+        a.setAttribute('download', `xpense_report_${new Date().toISOString().split('T')[0]}.csv`);
+        a.click();
+    } catch (error) {
+        console.error('Export failed:', error);
     }
 });
