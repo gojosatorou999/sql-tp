@@ -1,26 +1,37 @@
-Expense Tracker API & Dashboard
+# Xpense | Smart Expense Tracker
 
-A modern, simple-to-use Expense Tracker built with Node.js, Express, and SQLite.
+A modern, full-stack expense tracking application with a premium UI and real-time data visualization.
 
- ->Features
-- **Add Expenses**: Easily track your spending with category and amount.
-- **View History**: See your recent transactions in a clean, glassy UI.
-- **Spending Stats**: Automatic total spending calculation and category-wise breakdown.
-- **SQLite Storage**: Persistent data without complex setup.
-- **Mobile Responsive**: Works across various screen sizes.
+## ✨ New Features
+- **Visual Analytics**: Interactive doughnut chart showing category-wise spending breakdown using Chart.js.
+- **Advanced Filtering**: Search through transactions by description or category.
+- **Full CRUD**: Edit existing transactions and update their details.
+- **Detailed Tracking**: Support for custom dates and descriptions for every expense.
+- **Premium UI**: Glassmorphism design with a bento-style dashboard, dark mode, and smooth animations.
+- **Responsive**: Fully optimized for mobile and desktop views.
 
-->API Endpoints
-- `GET /api/expenses`: Retrieve all expenses.
-- `POST /api/expenses`: Create a new expense (body: `{ amount, category }`).
-- `DELETE /api/expenses/:id`: Remove an expense by ID.
-- `GET /api/expenses/stats`: Get total spending and category breakdown.
+## 🚀 Quick Start
 
-### Tech Stack
-- **Backend**: Node.js & Express
-- **Database**: SQLite (via `better-sqlite3`)
-- **Frontend**: Vanilla HTML/CSS/JS (Modern & Aesthetic focus)
+1. **Install Dependencies**:
+   ```bash
+   npm install
+   ```
 
-### How to Run
-1. Install dependencies: `npm install`
-2. Start the server: `npm start`
-3. Visit `http://localhost:3000`
+2. **Start the Server**:
+   ```bash
+   npm start
+   ```
+
+3. **Access the App**:
+   Open [http://localhost:3000](http://localhost:3000) in your browser.
+
+## 🛠️ Technology Stack
+- **Frontend**: HTML5, Vanilla CSS, JavaScript (ES6+), Chart.js, Lucide Icons.
+- **Backend**: Node.js, Express.
+- **Database**: SQLite (via `better-sqlite3`).
+
+## 📁 Project Structure
+- `index.js`: Express server and API endpoints.
+- `database.js`: SQLite database initialization and schema.
+- `public/`: Frontend assets (HTML, CSS, JS).
+- `expenses.db`: SQLite database file (generated automatically).
