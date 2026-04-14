@@ -104,11 +104,27 @@ app.get('/api/expenses/stats', (req, res) => {
   // Category-wise breakdown
   const breakdown = db.prepare('SELECT category, SUM(amount) as total FROM expenses GROUP BY category').all();
   
+  // Monthly trends (Last 6 months)
+  const trends = [];
+  for (let i = 5; i >= 0; i--) {
+    const d = new Date();
+    d.setMonth(d.getMonth() - i);
+    const monthStr = d.toISOString().substring(0, 7); // YYYY-MM
+    const monthName = d.toLocaleString('default', { month: 'short' });
+    
+    const res = db.prepare("SELECT SUM(amount) as total FROM expenses WHERE date LIKE ?").get(`${monthStr}%`);
+    trends.push({
+      month: monthName,
+      total: res.total || 0
+    });
+  }
+  
   res.json({
     totalSpending: total.total || 0,
     monthlyTotal: monthlyTotal.total || 0,
     todayTotal: todayTotal.total || 0,
-    breakdown: breakdown
+    breakdown: breakdown,
+    trends: trends
   });
 });
 

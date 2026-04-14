@@ -1,4 +1,5 @@
 let categoryChart = null;
+let trendChart = null;
 let monthlyBudget = 0;
 
 // DOM Elements
@@ -84,6 +85,7 @@ async function updateDashboard() {
         renderStats(stats);
         updateBudgetProgress(stats.monthlyTotal);
         renderChart(stats.breakdown);
+        renderTrendChart(stats.trends);
         renderExpenses(expenses);
     } catch (error) {
         console.error('Error fetching data:', error);
@@ -165,6 +167,58 @@ function renderChart(breakdown) {
                 }
             },
             cutout: '75%',
+            responsive: true,
+            maintainAspectRatio: false
+        }
+    });
+}
+
+// Render Trend Chart
+function renderTrendChart(trends) {
+    const ctx = document.getElementById('trend-chart').getContext('2d');
+    
+    const labels = trends.map(item => item.month);
+    const data = trends.map(item => item.total);
+
+    if (trendChart) {
+        trendChart.destroy();
+    }
+
+    trendChart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: labels,
+            datasets: [{
+                label: 'Spending',
+                data: data,
+                backgroundColor: 'rgba(139, 92, 246, 0.6)',
+                borderColor: '#8b5cf6',
+                borderWidth: 2,
+                borderRadius: 4
+            }]
+        },
+        options: {
+            plugins: {
+                legend: { display: false },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            return ` ₹${context.raw.toFixed(2)}`;
+                        }
+                    }
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    grid: { color: 'rgba(156, 163, 175, 0.1)' },
+                    ticks: { color: '#9ca3af', font: { family: 'Outfit' } }
+                },
+                x: {
+                    grid: { display: false },
+                    ticks: { color: '#9ca3af', font: { family: 'Outfit' } }
+                }
+            },
             responsive: true,
             maintainAspectRatio: false
         }
