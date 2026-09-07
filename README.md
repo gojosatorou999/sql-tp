@@ -12,7 +12,7 @@ A modern, full-stack expense tracking application with a premium UI and real-tim
 - **Detailed Tracking**: Support for custom dates and descriptions for every expense.
 - **Premium UI**: Glassmorphism design with a bento-style dashboard, dark mode, and smooth animations.
 
-## 🚀 Quick Start
+## 🚀 Quick Start  
 
 1. **Install Dependencies**:
    ```bash
